@@ -52,7 +52,7 @@ class DNNService(object):
             if isinstance(thr_nms, str):
                 thr_nms = float(thr_nms)
             
-            if isinstance(thr_size, str):
+            if isinstance(size, str):
                 size = int(size)
         except:
             raise cherrypy.HTTPError(status=400)
@@ -68,8 +68,8 @@ class DNNService(object):
         if not has_frame:
             raise cherrypy.HTTPError(status=400)
 
-        frame_width = frame.shape[0]
-        frame_height = frame.shape[1]
+        frame_width = frame.shape[1]
+        frame_height = frame.shape[0]
 
         blob = cv.dnn.blobFromImage(frame, 1/255, (size, size), 0, True, crop=False)
 
@@ -103,27 +103,29 @@ class DNNService(object):
                 scores = detection[5:]
                 classId = np.argmax(scores)
                 confidence = scores[classId]
-                if confidence > thr_score:
+                if confidence >= thr_score:
+                    print(confidence)
                     center_x = int(detection[0] * frame_width)
                     center_y = int(detection[1] * frame_height)
                     width = int(detection[2] * frame_width)
                     height = int(detection[3] * frame_height)
-                    left = center_x - width / 2
-                    top = center_y - height / 2
+                    left = int(center_x - width / 2)
+                    top = int(center_y - height / 2)
                     classIds.append(classId)
                     confidences.append(float(confidence))
                     boxes.append([left, top, width, height])
-            indices = cv.dnn.NMSBoxes(boxes, confidences, thr_score, thr_nms)
-
-            for i in indices:
-                i = i[0]
-                box = boxes[i]
-                left = box[0]
-                top = box[1]
-                width = box[2]
-                height = box[3]
             
-                predictions.append( {'class': str(classes[classIds[i]]), 'box': {'x': int(left), 'y': int(top), 'x1': int(left + width), 'y1': int(top + height)}, 'confidence': round(float(confidences[i]),3)})
+        indices = cv.dnn.NMSBoxes(boxes, confidences, thr_score, thr_nms)
+
+        for i in indices:
+            i = i[0]
+            box = boxes[i]
+            left = box[0]
+            top = box[1]
+            width = box[2]
+            height = box[3]
+        
+            predictions.append( {'class': str(classes[classIds[i]]), 'box': {'x': left, 'y': top, 'x1': left + width, 'y1': top + height}, 'confidence': round(float(confidences[i]),3)})
         
         return predictions
 
