@@ -1,4 +1,4 @@
-#DNN Rest Service using Yolo
+# DNN Rest Service using Yolo
 
 Simple REST interface that exposes DNN using Yolo
 
