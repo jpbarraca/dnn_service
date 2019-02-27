@@ -1,5 +1,5 @@
-FROM debian
-MAINTAINER João Paulo Barraca
+FROM czentye/opencv-video-minimal 
+MAINTAINER Diogo Gomes <diogogomes@gmail.com> 
 
 RUN mkdir -p /opt
 
@@ -8,17 +8,12 @@ RUN wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cf
 RUN wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -O /opt/coco.names
 
 COPY dnn_service.py /opt
-COPY opencv.tar.gz /opt
 
-RUN tar -zxvf /opt/opencv.tar.gz -C /
-RUN ls /usr/local/bin
-
-RUN apt-get update
-RUN apt-get install -y python3-cherrypy3 libjpeg62-turbo libpng16-16 libtiff5 libvtk6.3 libglu1-mesa python3-numpy vim
+RUN pip install cherrypy
 
 WORKDIR /opt
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["/usr/bin/python3", "/opt/dnn_service.py"] 
 
